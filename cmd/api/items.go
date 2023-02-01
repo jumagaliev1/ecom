@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/jumagaliev1/internal/data"
 	"net/http"
@@ -8,7 +9,18 @@ import (
 )
 
 func (app *application) createItemHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create a new item")
+	var input struct {
+		Title    string `json:"title"`
+		Price    int64  `json:"price"`
+		Category int32  `json:"category"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&input)
+	if err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+		return
+	}
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (app *application) showItemHandler(w http.ResponseWriter, r *http.Request) {

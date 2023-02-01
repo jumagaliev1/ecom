@@ -10,7 +10,7 @@ type Item struct {
 	Title       string    `json:"title"`
 	Price       Price     `json:"price,omitempty"`
 	IsPurchased bool      `json:"isPurchased"`
-	Category    int64     `json:"category,omitempty"`
+	Category    int32     `json:"category,omitempty"`
 	Rating      uint8     `json:"rating,omitempty"`
 	Version     int32     `json:"version"`
 }
