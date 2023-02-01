@@ -1,23 +1,35 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/jumagaliev1/internal/data"
+	"github.com/jumagaliev1/internal/validator"
 	"net/http"
 	"time"
 )
 
 func (app *application) createItemHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Title    string `json:"title"`
-		Price    int64  `json:"price"`
-		Category int32  `json:"category"`
+		Title    string     `json:"title"`
+		Price    data.Price `json:"price"`
+		Category int32      `json:"category"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&input)
+	err := app.readJSON(w, r, &input)
 	if err != nil {
-		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	item := &data.Item{
+		Title:    input.Title,
+		Price:    input.Price,
+		Category: input.Category,
+	}
+
+	v := validator.New()
+
+	if data.ValidateItem(v, item); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 	fmt.Fprintf(w, "%+v\n", input)
