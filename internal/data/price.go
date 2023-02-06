@@ -11,15 +11,15 @@ var ErrInvalidRuntimeFormat = errors.New("invalid price format")
 
 type Price int64
 
-func (r Price) MarshalJSON() ([]byte, error) {
-	jsonValue := fmt.Sprintf("%d тг", r)
+func (p Price) MarshalJSON() ([]byte, error) {
+	jsonValue := fmt.Sprintf("%d тг", p)
 
 	quotedJSONValue := strconv.Quote(jsonValue)
 
 	return []byte(quotedJSONValue), nil
 }
 
-func (r *Price) UnmarshalJSON(jsonValue []byte) error {
+func (p *Price) UnmarshalJSON(jsonValue []byte) error {
 	unquotedJSONValue, err := strconv.Unquote(string(jsonValue))
 	if err != nil {
 		return ErrInvalidRuntimeFormat
@@ -35,6 +35,6 @@ func (r *Price) UnmarshalJSON(jsonValue []byte) error {
 		return ErrInvalidRuntimeFormat
 	}
 
-	*r = Price(i)
+	*p = Price(i)
 	return nil
 }
