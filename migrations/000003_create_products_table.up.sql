@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS products (
     price bigint NOT NULL,
     rating float NOT NULL DEFAULT 0,
     stock int NOT NULL DEFAULT 1,
+    images text[],
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     deleted_at timestamp(0)

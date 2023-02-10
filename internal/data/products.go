@@ -1,6 +1,7 @@
 package data
 
 import (
+	"database/sql"
 	"github.com/jumagaliev1/internal/validator"
 	"github.com/lib/pq"
 	"time"
@@ -31,4 +32,31 @@ func ValidateItem(v *validator.Validator, p *Product) {
 	v.Check(p.Category != 0, "category", "must be provided")
 	v.Check(p.Category > 0, "category", "must be a positive integer")
 
+}
+
+type ProductModel struct {
+	DB *sql.DB
+}
+
+func (m ProductModel) Insert(product *Product) error {
+	query := `
+			INSERT INTO products (title, category_id, user_id, description, price, images)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			RETURNING id, created_at`
+
+	args := []interface{}{product.Title, product.Category, product.User, product.Description, product.Price, pq.Array(product.Images)}
+
+	return m.DB.QueryRow(query, args...).Scan(&product.ID, &product.CreatedAt)
+}
+
+func (m ProductModel) Get(id int64) (*Product, error) {
+	return nil, nil
+}
+
+func (m ProductModel) Update(movie *Product) error {
+	return nil
+}
+
+func (m ProductModel) Delete(id int64) error {
+	return nil
 }

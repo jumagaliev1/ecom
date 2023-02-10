@@ -4,20 +4,19 @@ import (
 	"fmt"
 	"github.com/jumagaliev1/internal/data"
 	"github.com/jumagaliev1/internal/validator"
-	"github.com/lib/pq"
 	"net/http"
 	"time"
 )
 
 func (app *application) createProductHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		User        int64          `json:"user"`
-		Title       string         `json:"title"`
-		Description string         `json:"description"`
-		Price       data.Price     `json:"price"`
-		Category    int32          `json:"category"`
-		Stock       int            `json:"stock"`
-		Images      pq.StringArray `json:"images"`
+		User        int64      `json:"user"`
+		Title       string     `json:"title"`
+		Description string     `json:"description"`
+		Price       data.Price `json:"price"`
+		Category    int32      `json:"category"`
+		Stock       int        `json:"stock"`
+		Images      []string   `json:"images"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -41,7 +40,20 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	fmt.Fprintf(w, "%+v\n", input)
+
+	err = app.models.Products.Insert(product)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/products/%d", product.ID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"product": product}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showProductHandler(w http.ResponseWriter, r *http.Request) {
