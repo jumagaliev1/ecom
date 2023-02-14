@@ -1,11 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jumagaliev1/internal/data"
 	"github.com/jumagaliev1/internal/validator"
 	"net/http"
-	"time"
 )
 
 func (app *application) createProductHandler(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 
 	v := validator.New()
 
-	if data.ValidateItem(v, product); !v.Valid() {
+	if data.ValidateProduct(v, product); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
@@ -62,21 +62,153 @@ func (app *application) showProductHandler(w http.ResponseWriter, r *http.Reques
 		http.NotFound(w, r)
 		return
 	}
-	product := data.Product{
-		ID:          id,
-		Category:    1,
-		User:        0,
-		Title:       "IPhone 11",
-		Description: "Apple phones Memory 64gb",
-		Price:       1_500_000,
-		Rating:      5,
-		Stock:       4,
-		Images:      []string{"google.com", "youtube.com"},
-		CreatedAt:   time.Now(),
+	product, err := app.models.Products.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	err = app.writeJSON(w, http.StatusOK, envelope{"product": product}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	product, err := app.models.Products.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var input struct {
+		Category    *int32      `json:"category"`
+		User        *int64      `json:"user"`
+		Title       *string     `json:"title"`
+		Description *string     `json:"description"`
+		Price       *data.Price `json:"price"`
+		Rating      *uint8      `json:"rating"`
+		Stock       *int        `json:"stock"`
+		Images      []string    `json:"images"`
+	}
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+	if input.Category != nil {
+		product.Category = *input.Category
+	}
+
+	if input.User != nil {
+		product.User = *input.User
+	}
+
+	if input.Title != nil {
+		product.Title = *input.Title
+	}
+
+	if input.Description != nil {
+		product.Description = *input.Description
+	}
+
+	if input.Price != nil {
+		product.Price = *input.Price
+	}
+
+	if input.Rating != nil {
+		product.Rating = *input.Rating
+	}
+
+	if input.Stock != nil {
+		product.Stock = *input.Stock
+	}
+
+	if input.Images != nil {
+		product.Images = input.Images
+	}
+
+	v := validator.New()
+
+	if data.ValidateProduct(v, product); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.models.Products.Update(product)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"product": product}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	err = app.models.Products.Delete(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"message": "product successfully deleted"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) listProductsHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title    string
+		Category int
+		Page     int
+		PageSize int
+		Sort     string
+	}
+
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	input.Title = app.readString(qs, "title", "")
+	input.Category = app.readInt(qs, "category", 0, v)
+	input.Page = app.readInt(qs, "page", 1, v)
+	input.PageSize = app.readInt(qs, "page_size", 20, v)
+	input.Sort = app.readString(qs, "sort", "id")
+
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
 }

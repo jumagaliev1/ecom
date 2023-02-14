@@ -12,8 +12,11 @@ func (app *application) routes() *httprouter.Router {
 	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
+	router.HandlerFunc(http.MethodGet, "/v1/products", app.listProductsHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/products", app.createProductHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/products/:id", app.showProductHandler)
+	router.HandlerFunc(http.MethodPatch, "/v1/products/:id", app.updateProductHandler)
+	router.HandlerFunc(http.MethodDelete, "/v1/products/:id", app.deleteProductHandler)
 
 	return router
 }
