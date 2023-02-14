@@ -190,9 +190,7 @@ func (app *application) listProductsHandler(w http.ResponseWriter, r *http.Reque
 	var input struct {
 		Title    string
 		Category int
-		Page     int
-		PageSize int
-		Sort     string
+		data.Filters
 	}
 
 	v := validator.New()
@@ -201,14 +199,25 @@ func (app *application) listProductsHandler(w http.ResponseWriter, r *http.Reque
 
 	input.Title = app.readString(qs, "title", "")
 	input.Category = app.readInt(qs, "category", 0, v)
-	input.Page = app.readInt(qs, "page", 1, v)
-	input.PageSize = app.readInt(qs, "page_size", 20, v)
-	input.Sort = app.readString(qs, "sort", "id")
 
-	if !v.Valid() {
+	input.Filters.Page = app.readInt(qs, "page", 1, v)
+	input.Filters.PageSize = app.readInt(qs, "page_size", 20, v)
+	input.Filters.Sort = app.readString(qs, "sort", "id")
+	input.Filters.SortSafelist = []string{"id", "title", "category", "price", "rating", "-id", "-title", "-category", "-price", "-rating"}
+
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	products, err := app.models.Products.GetAll(input.Title, input.Category, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"products": products}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }

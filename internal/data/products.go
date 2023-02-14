@@ -134,3 +134,45 @@ func (m ProductModel) Delete(id int64) error {
 
 	return nil
 }
+
+func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Product, error) {
+	query := `
+			SELECT id, category_id, user_id, title, description, price, rating, stock, images, created_at
+			FROM products
+			ORDER BY id`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	products := []*Product{}
+
+	for rows.Next() {
+		var product Product
+		err := rows.Scan(
+			&product.ID,
+			&product.Category,
+			&product.User,
+			&product.Title,
+			&product.Description,
+			&product.Price,
+			&product.Rating,
+			&product.Stock,
+			pq.Array(&product.Images),
+			&product.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, &product)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return products, nil
+}
