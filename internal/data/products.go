@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/jumagaliev1/internal/validator"
 	"github.com/lib/pq"
 	"time"
@@ -136,12 +137,12 @@ func (m ProductModel) Delete(id int64) error {
 }
 
 func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Product, error) {
-	query := `
+	query := fmt.Sprintf(`
 			SELECT id, category_id, user_id, title, description, price, rating, stock, images, created_at
 			FROM products
 			WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
 			AND (category_id = $2 or $2 = 0)
-			ORDER BY id`
+			ORDER BY %s %s, id ASC`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
