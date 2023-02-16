@@ -196,7 +196,7 @@ func (app *application) listProductsHandler(w http.ResponseWriter, r *http.Reque
 	v := validator.New()
 
 	qs := r.URL.Query()
-
+	
 	input.Title = app.readString(qs, "title", "")
 	input.Category = app.readInt(qs, "category", 0, v)
 

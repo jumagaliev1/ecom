@@ -139,12 +139,14 @@ func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Pr
 	query := `
 			SELECT id, category_id, user_id, title, description, price, rating, stock, images, created_at
 			FROM products
+			WHERE (LOWER(title) = LOWER($1) OR $1 = '')
+			AND (category_id = $2 or $2 = 0)
 			ORDER BY id`
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, query)
+	rows, err := m.DB.QueryContext(ctx, query, title, category)
 	if err != nil {
 		return nil, err
 	}
