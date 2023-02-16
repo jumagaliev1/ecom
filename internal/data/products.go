@@ -136,9 +136,9 @@ func (m ProductModel) Delete(id int64) error {
 	return nil
 }
 
-func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Product, error) {
+func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Product, Metadata, error) {
 	query := fmt.Sprintf(`
-			SELECT id, category_id, user_id, title, description, price, rating, stock, images, created_at
+			SELECT count(*) OVER(),  id, category_id, user_id, title, description, price, rating, stock, images, created_at
 			FROM products
 			WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
 			AND (category_id = $2 or $2 = 0)
