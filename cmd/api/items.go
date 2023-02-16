@@ -196,7 +196,7 @@ func (app *application) listProductsHandler(w http.ResponseWriter, r *http.Reque
 	v := validator.New()
 
 	qs := r.URL.Query()
-	
+
 	input.Title = app.readString(qs, "title", "")
 	input.Category = app.readInt(qs, "category", 0, v)
 
@@ -210,13 +210,13 @@ func (app *application) listProductsHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	products, err := app.models.Products.GetAll(input.Title, input.Category, input.Filters)
+	products, metadata, err := app.models.Products.GetAll(input.Title, input.Category, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"products": products}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"products": products, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

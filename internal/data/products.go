@@ -150,16 +150,17 @@ func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Pr
 
 	rows, err := m.DB.QueryContext(ctx, query, title, category, filters.limit(), filters.offset())
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
-
+	totalRecords := 0
 	products := []*Product{}
 
 	for rows.Next() {
 		var product Product
 		err := rows.Scan(
+			&totalRecords,
 			&product.ID,
 			&product.Category,
 			&product.User,
@@ -171,12 +172,15 @@ func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Pr
 			pq.Array(&product.Images),
 			&product.CreatedAt)
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 		products = append(products, &product)
 	}
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
-	return products, nil
+
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return products, metadata, nil
 }
