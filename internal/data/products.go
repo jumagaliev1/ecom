@@ -139,7 +139,7 @@ func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Pr
 	query := `
 			SELECT id, category_id, user_id, title, description, price, rating, stock, images, created_at
 			FROM products
-			WHERE (LOWER(title) = LOWER($1) OR $1 = '')
+			WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
 			AND (category_id = $2 or $2 = 0)
 			ORDER BY id`
 
