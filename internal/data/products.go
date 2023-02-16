@@ -142,12 +142,13 @@ func (m ProductModel) GetAll(title string, category int, filters Filters) ([]*Pr
 			FROM products
 			WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
 			AND (category_id = $2 or $2 = 0)
-			ORDER BY %s %s, id ASC`, filters.sortColumn(), filters.sortDirection())
+			ORDER BY %s %s, id ASC
+			LIMIT $3 OFFSET $4`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	rows, err := m.DB.QueryContext(ctx, query, title, category)
+	rows, err := m.DB.QueryContext(ctx, query, title, category, filters.limit(), filters.offset())
 	if err != nil {
 		return nil, err
 	}
