@@ -58,13 +58,11 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
-	// Start the HTTP server.
-	logger.PrintInfo("starting server", map[string]string{
-		"addr": srv.Addr,
-		"env":  cfg.env,
-	})
-	err = srv.ListenAndServe()
-	logger.PrintFatal(err, nil)
+
+	err = app.serve()
+	if err != nil {
+		logger.PrintFatal(err, nil)
+	}
 }
 
 func openDB(cfg config) (*sql.DB, error) {
