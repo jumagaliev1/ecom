@@ -18,5 +18,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPatch, "/v1/products/:id", app.updateProductHandler)
 	router.HandlerFunc(http.MethodDelete, "/v1/products/:id", app.deleteProductHandler)
 
-	return app.recoverPanic(router)
+	router.HandlerFunc(http.MethodPost, "/v1/users", app.registerUserHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/tokens/authentication", app.createAuthenticationTokenHandler)
+	return app.recoverPanic(app.authenticate(router))
 }

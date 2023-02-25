@@ -16,6 +16,7 @@ type Models struct {
 	Carts    CartModel
 	Orders   OrderModel
 	Comments CommentModel
+	Tokens   TokenModel
 }
 
 func NewModels(db *sql.DB) Models {
@@ -25,5 +26,6 @@ func NewModels(db *sql.DB) Models {
 		Carts:    CartModel{DB: db},
 		Orders:   OrderModel{DB: db},
 		Comments: CommentModel{DB: db},
+		Tokens:   TokenModel{DB: db},
 	}
 }
