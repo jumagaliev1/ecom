@@ -37,6 +37,14 @@ type User struct {
 	DeletedAt time.Time `json:"-"`
 }
 
+type UserRegisterInput struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Role      string `json:"role"`
+	Password  string `json:"password"`
+}
+
 type password struct {
 	plaintext *string
 	hash      []byte
@@ -106,9 +114,21 @@ func (m UserModel) Insert(user *User) error {
 			VALUES ($1, $2, $3, $4, $5, $6)
 			RETURNING id, created_at`
 
-	args := []interface{}{user.FirstName, user.LastName, user.Email, user.Phone, user.Password, Roles_value[user.Role]}
+	args := []interface{}{user.FirstName, user.LastName, user.Email, user.Phone, user.Password.hash, Roles_value[user.Role]}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-	return m.DB.QueryRow(query, args...).Scan(&user.ID, &user.CreatedAt)
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&user.ID, &user.CreatedAt)
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			return ErrDuplicateEmail
+		default:
+			return err
+		}
+
+	}
+	return nil
 }
 
 func (m UserModel) GetByEmail(email string) (*User, error) {
