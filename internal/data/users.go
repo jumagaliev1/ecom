@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"errors"
 	"github.com/jumagaliev1/internal/validator"
@@ -22,6 +23,7 @@ var (
 		"Customer": 2,
 	}
 )
+var AnonymousUser = &User{}
 
 type User struct {
 	ID        int64     `json:"id"`
@@ -35,6 +37,10 @@ type User struct {
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 	DeletedAt time.Time `json:"-"`
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }
 
 type UserRegisterInput struct {
@@ -133,7 +139,7 @@ func (m UserModel) Insert(user *User) error {
 
 func (m UserModel) GetByEmail(email string) (*User, error) {
 	query := `
-			SELECT id, first_name, last_name, email, phone, address, password_hash, role, created_at
+			SELECT id, first_name, last_name, email, phone, password_hash, role, created_at
 			FROM users
 			WHERE email = $1`
 
@@ -148,7 +154,7 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 		&user.LastName,
 		&user.Email,
 		&user.Phone,
-		&user.Address,
+		//&user.Address,
 		&user.Password.hash,
 		&user.Role,
 		&user.CreatedAt,
@@ -207,3 +213,41 @@ func (m UserModel) Update(user *User) error {
 //	err := m.DB.ExecContext(ctx, query, id)
 //	return nil
 //}
+
+func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error) {
+	tokenHash := sha256.Sum256([]byte(tokenPlaintext))
+	query := `
+			SELECT users.id, users.created_at, users.first_name, users.last_name, users.email, users.password_hash, users.role
+			FROM users
+			INNER JOIN tokens
+			ON users.id = tokens.user_id
+			WHERE tokens.hash = $1
+			AND tokens.scope = $2
+			AND tokens.expiry > $3`
+
+	args := []interface{}{tokenHash[:], tokenScope, time.Now()}
+
+	var user User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, args...).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Password.hash,
+		&user.Role,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &user, nil
+}
