@@ -72,7 +72,17 @@ func (app *application) showProductHandler(w http.ResponseWriter, r *http.Reques
 		}
 		return
 	}
-	err = app.writeJSON(w, http.StatusOK, envelope{"product": product}, nil)
+	comments, err := app.models.Comments.GetByProduct(product)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+	err = app.writeJSON(w, http.StatusOK, envelope{"product": product, "comments": comments}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -101,7 +111,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 		Title       *string     `json:"title"`
 		Description *string     `json:"description"`
 		Price       *data.Price `json:"price"`
-		Rating      *uint8      `json:"rating"`
+		Rating      *float32    `json:"rating"`
 		Stock       *int        `json:"stock"`
 		Images      []string    `json:"images"`
 	}

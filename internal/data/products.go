@@ -11,18 +11,20 @@ import (
 )
 
 type Product struct {
-	ID          int64     `json:"id"`
-	Category    int32     `json:"category,omitempty"`
-	User        int64     `json:"user"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Price       Price     `json:"price,omitempty"`
-	Rating      uint8     `json:"rating,omitempty"`
-	Stock       int       `json:"stock"`
-	Images      []string  `json:"images"`
-	CreatedAt   time.Time `json:"-"`
-	UpdatedAt   time.Time `json:"-"`
-	DeletedAt   time.Time `json:"-"`
+	ID          int64      `json:"id"`
+	Category    int32      `json:"category,omitempty"`
+	User        int64      `json:"user"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Price       Price      `json:"price,omitempty"`
+	Rating      float32    `json:"rating,omitempty"`
+	CountRating int        `json:"-"`
+	AllRating   int        `json:"-"`
+	Stock       int        `json:"stock"`
+	Images      []string   `json:"images"`
+	CreatedAt   time.Time  `json:"-"`
+	UpdatedAt   time.Time  `json:"-"`
+	DeletedAt   *time.Time `json:"-"`
 }
 
 func ValidateProduct(v *validator.Validator, p *Product) {
@@ -56,7 +58,7 @@ func (m ProductModel) Get(id int64) (*Product, error) {
 		return nil, ErrRecordNotFound
 	}
 	query := `
-			SELECT id, category_id, user_id, title, description, price, rating, stock, images, created_at
+			SELECT id, category_id, user_id, title, description, price, rating,all_rating, count_rating, stock, images, created_at
 			FROM products 
 			WHERE id = $1`
 
@@ -73,6 +75,8 @@ func (m ProductModel) Get(id int64) (*Product, error) {
 		&product.Description,
 		&product.Price,
 		&product.Rating,
+		&product.AllRating,
+		&product.CountRating,
 		&product.Stock,
 		pq.Array(&product.Images),
 		&product.CreatedAt)
@@ -91,8 +95,8 @@ func (m ProductModel) Get(id int64) (*Product, error) {
 func (m ProductModel) Update(product *Product) error {
 	query := `
 		UPDATE products
-		SET title = $1, category_id = $2, user_id = $3, description = $4, price = $5, rating = $6, stock = $7, images = $8, updated_at = now()
-		WHERE id = $9 
+		SET title = $1, category_id = $2, user_id = $3, description = $4, price = $5, rating = $6, all_rating = $7, count_rating = $8, stock = $9, images = $10, updated_at = now()
+		WHERE id = $11 
 		RETURNING updated_at`
 
 	args := []interface{}{
@@ -102,6 +106,8 @@ func (m ProductModel) Update(product *Product) error {
 		product.Description,
 		product.Price,
 		product.Rating,
+		product.AllRating,
+		product.CountRating,
 		product.Stock,
 		pq.Array(product.Images),
 		product.ID,

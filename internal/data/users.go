@@ -26,17 +26,17 @@ var (
 var AnonymousUser = &User{}
 
 type User struct {
-	ID        int64     `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Address   string    `json:"address"`
-	Password  password  `json:"-"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
-	DeletedAt time.Time `json:"-"`
+	ID        int64      `json:"id"`
+	FirstName string     `json:"first_name"`
+	LastName  string     `json:"last_name"`
+	Email     string     `json:"email"`
+	Phone     string     `json:"phone"`
+	Address   string     `json:"address"`
+	Password  password   `json:"-"`
+	Role      string     `json:"role"`
+	CreatedAt time.Time  `json:"-"`
+	UpdatedAt time.Time  `json:"-"`
+	DeletedAt *time.Time `json:"-"`
 }
 
 func (u *User) IsAnonymous() bool {
@@ -136,7 +136,39 @@ func (m UserModel) Insert(user *User) error {
 	}
 	return nil
 }
+func (m UserModel) GetByID(id int) (*User, error) {
+	query := `
+			SELECT id, first_name, last_name, email, phone, password_hash, role, created_at
+			FROM users
+			WHERE id = $1`
 
+	var user User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Email,
+		&user.Phone,
+		//&user.Address,
+		&user.Password.hash,
+		&user.Role,
+		&user.CreatedAt,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+	return &user, nil
+}
 func (m UserModel) GetByEmail(email string) (*User, error) {
 	query := `
 			SELECT id, first_name, last_name, email, phone, password_hash, role, created_at
