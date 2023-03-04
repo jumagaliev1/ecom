@@ -4,6 +4,23 @@ import (
 	"net/http"
 )
 
+type Env struct {
+	Status     string     `json:"status"`
+	SystemInfo SystemInfo `json:"system_info"`
+}
+
+type SystemInfo struct {
+	Environment string `json:"environment"`
+	Version     string `json:"version"`
+}
+
+// @Summary      Healthcheck
+// @Description  HealthCheck of server
+// @Accept       json
+// @Produce      json
+// @Success      200  {object} Env
+// @Failure      500  {object}  Error
+// @Router       /healthcheck [get]
 func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	env := envelope{
 		"status": "available",

@@ -1,0 +1,468 @@
+basePath: /v1
+definitions:
+  data.Comment:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      message:
+        type: string
+      rating:
+        type: integer
+      user:
+        $ref: '#/definitions/data.User'
+    type: object
+  data.InputAuthUser:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  data.InputComment:
+    properties:
+      message:
+        type: string
+      product_id:
+        type: integer
+      rating:
+        type: integer
+    type: object
+  data.InputCreateProduct:
+    properties:
+      category:
+        type: integer
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      price:
+        type: integer
+      stock:
+        type: integer
+      title:
+        type: string
+    type: object
+  data.InputUpdateProduct:
+    properties:
+      category:
+        type: integer
+      description:
+        type: string
+      images:
+        items:
+          type: string
+        type: array
+      price:
+        type: integer
+      rating:
+        type: number
+      stock:
+        type: integer
+      title:
+        type: string
+    type: object
+  data.Product:
+    properties:
+      category:
+        type: integer
+      description:
+        type: string
+      id:
+        type: integer
+      images:
+        items:
+          type: string
+        type: array
+      price:
+        type: integer
+      rating:
+        type: number
+      stock:
+        type: integer
+      title:
+        type: string
+      user:
+        type: integer
+    type: object
+  data.Token:
+    properties:
+      expiry:
+        type: string
+      token:
+        type: string
+    type: object
+  data.User:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      phone:
+        type: string
+      role:
+        type: string
+    type: object
+  data.UserRegisterInput:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+    type: object
+  main.Env:
+    properties:
+      status:
+        type: string
+      system_info:
+        $ref: '#/definitions/main.SystemInfo'
+    type: object
+  main.Error:
+    properties:
+      error:
+        type: string
+    type: object
+  main.SystemInfo:
+    properties:
+      environment:
+        type: string
+      version:
+        type: string
+    type: object
+host: localhost:4000
+info:
+  contact: {}
+  description: API Ecom Kaspi
+  title: Ecom(Kaspi) API
+  version: "1.0"
+paths:
+  /comment:
+    post:
+      consumes:
+      - application/json
+      description: Give review with rating of product
+      parameters:
+      - description: input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/data.InputComment'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Comment'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Add Comment
+      tags:
+      - Comment
+  /healthcheck:
+    get:
+      consumes:
+      - application/json
+      description: HealthCheck of server
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Env'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      summary: Healthcheck
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: All list of Products on Shop
+      parameters:
+      - description: title
+        in: query
+        name: title
+        type: string
+      - description: category
+        in: query
+        name: category
+        type: integer
+      - description: page
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: sort
+        in: query
+        name: sort
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/data.Product'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List of Products
+      tags:
+      - Product
+    post:
+      consumes:
+      - application/json
+      description: Creat Product for Shop
+      parameters:
+      - description: input
+        in: body
+        name: inout
+        required: true
+        schema:
+          $ref: '#/definitions/data.InputCreateProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Product'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Product
+      tags:
+      - Product
+  /products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete Product for Shop
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete Product
+      tags:
+      - Product
+    get:
+      consumes:
+      - application/json
+      description: Show Product for Shop
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Product'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Show Product
+      tags:
+      - Product
+    patch:
+      consumes:
+      - application/json
+      description: Update Product for Shop
+      parameters:
+      - description: Input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/data.InputUpdateProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Product'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update Product
+      tags:
+      - Product
+  /tokens/authentication:
+    post:
+      consumes:
+      - application/json
+      description: Authentication user
+      parameters:
+      - description: Input for Auth user
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/data.InputAuthUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/data.Token'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      summary: Authentication User
+      tags:
+      - User
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Registaration user
+      parameters:
+      - description: Input for remove user
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/data.UserRegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/data.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      summary: Register User
+      tags:
+      - User
+securityDefinitions:
+  ApiKeyAuth:
+    description: OAuth protects our entity endpoints
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

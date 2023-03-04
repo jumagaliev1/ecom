@@ -8,29 +8,27 @@ import (
 	"net/http"
 )
 
+// @Summary      Add Comment
+// @Description  Give review with rating of product
+// @Security	ApiKeyAuth
+// @Tags         Comment
+// @Accept       json
+// @Produce      json
+// @Param        input body  data.InputComment  true  "input"
+// @Success      200  {object}  data.Comment
+// @Failure      422  {object}  Error
+// @Failure      404  {object}  Error
+// @Failure      500  {object}  Error
+// @Router       /comment [post]
 func (app *application) createCommentHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		UserID    int    `json:"user_id"`
-		ProductID int    `json:"product_id"`
-		Message   string `json:"message"`
-		Rating    uint8  `json:"rating"`
-	}
+	input := &data.InputComment{}
 
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
-	user, err := app.models.Users.GetByID(input.UserID)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
-		return
-	}
+	user := app.contextGetUser(r)
 	product, err := app.models.Products.Get(int64(input.ProductID))
 	if err != nil {
 		switch {

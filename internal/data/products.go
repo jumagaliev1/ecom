@@ -16,7 +16,7 @@ type Product struct {
 	User        int64      `json:"user"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
-	Price       Price      `json:"price,omitempty"`
+	Price       int        `json:"price,omitempty"`
 	Rating      float32    `json:"rating,omitempty"`
 	CountRating int        `json:"-"`
 	AllRating   int        `json:"-"`

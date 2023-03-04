@@ -30,8 +30,8 @@ type User struct {
 	FirstName string     `json:"first_name"`
 	LastName  string     `json:"last_name"`
 	Email     string     `json:"email"`
-	Phone     string     `json:"phone"`
-	Address   string     `json:"address"`
+	Phone     *string    `json:"phone"`
+	Address   *string    `json:"address"`
 	Password  password   `json:"-"`
 	Role      string     `json:"role"`
 	CreatedAt time.Time  `json:"-"`

@@ -27,6 +27,17 @@ type application struct {
 	models data.Models
 }
 
+// @title           Ecom(Kaspi) API
+// @version         1.0
+// @description     API Ecom Kaspi
+
+// @host     localhost:4000
+// @BasePath  /v1
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+// @description OAuth protects our entity endpoints
 func main() {
 	var cfg config
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")

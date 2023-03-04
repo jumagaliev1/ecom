@@ -8,24 +8,29 @@ import (
 	"net/http"
 )
 
+// @Summary      Create Product
+// @Description  Creat Product for Shop
+// @Security	ApiKeyAuth
+// @Tags         Product
+// @Accept       json
+// @Produce      json
+// @Param        inout body  data.InputCreateProduct  true  "input"
+// @Success      200  {object}  data.Product
+// @Failure      422  {object}  Error
+// @Failure      404  {object}  Error
+// @Failure      500  {object}  Error
+// @Router       /products [post]
 func (app *application) createProductHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		User        int64      `json:"user"`
-		Title       string     `json:"title"`
-		Description string     `json:"description"`
-		Price       data.Price `json:"price"`
-		Category    int32      `json:"category"`
-		Stock       int        `json:"stock"`
-		Images      []string   `json:"images"`
-	}
+	input := &data.InputCreateProduct{}
 
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
+	user := app.contextGetUser(r)
 	product := &data.Product{
-		User:        input.User,
+		User:        user.ID,
 		Title:       input.Title,
 		Description: input.Description,
 		Price:       input.Price,
@@ -56,10 +61,21 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// @Summary      Show Product
+// @Description  Show Product for Shop
+// @Security	ApiKeyAuth
+// @Tags         Product
+// @Accept       json
+// @Produce      json
+// @Param        id path int true  "Product ID"
+// @Success      200  {object}  data.Product
+// @Failure      404  {object}  Error
+// @Failure      500  {object}  Error
+// @Router       /products/{id} [get]
 func (app *application) showProductHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
-		http.NotFound(w, r)
+		app.notFoundResponse(w, r)
 		return
 	}
 	product, err := app.models.Products.Get(id)
@@ -88,6 +104,18 @@ func (app *application) showProductHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
+// @Summary      Update Product
+// @Description  Update Product for Shop
+// @Security	ApiKeyAuth
+// @Tags         Product
+// @Accept       json
+// @Produce      json
+// @Param        input body data.InputUpdateProduct true  "Input"
+// @Success      200  {object}  data.Product
+// @Failure      422  {object}  Error
+// @Failure      404  {object}  Error
+// @Failure      500  {object}  Error
+// @Router       /products/{id} [patch]
 func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -105,17 +133,8 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var input struct {
-		Category    *int32      `json:"category"`
-		User        *int64      `json:"user"`
-		Title       *string     `json:"title"`
-		Description *string     `json:"description"`
-		Price       *data.Price `json:"price"`
-		Rating      *float32    `json:"rating"`
-		Stock       *int        `json:"stock"`
-		Images      []string    `json:"images"`
-	}
-
+	input := &data.InputUpdateProduct{}
+	user := app.contextGetUser(r)
 	err = app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
@@ -125,9 +144,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 		product.Category = *input.Category
 	}
 
-	if input.User != nil {
-		product.User = *input.User
-	}
+	product.User = user.ID
 
 	if input.Title != nil {
 		product.Title = *input.Title
@@ -172,6 +189,17 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// @Summary      Delete Product
+// @Description  Delete Product for Shop
+// @Security	ApiKeyAuth
+// @Tags         Product
+// @Accept       json
+// @Produce      json
+// @Param        id path int true  "Product ID"
+// @Success      200  {object}  string
+// @Failure      404  {object}  Error
+// @Failure      500  {object}  Error
+// @Router       /products/{id} [delete]
 func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -196,12 +224,24 @@ func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
+// @Summary      List of Products
+// @Description  All list of Products on Shop
+// @Security	ApiKeyAuth
+// @Tags         Product
+// @Accept       json
+// @Produce      json
+// @Param        title query string false  "title"
+// @Param        category query int false  "category"
+// @Param        page query int false  "page"
+// @Param        page_size query int false  "Page size"
+// @Param        sort query string false  "sort"
+// @Success      200  {object}  []data.Product
+// @Failure      422  {object}  Error
+// @Failure      404  {object}  Error
+// @Failure      500  {object}  Error
+// @Router       /products [get]
 func (app *application) listProductsHandler(w http.ResponseWriter, r *http.Request) {
-	var input struct {
-		Title    string
-		Category int
-		data.Filters
-	}
+	input := &data.InputListProducts{}
 
 	v := validator.New()
 

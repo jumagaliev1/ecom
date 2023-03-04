@@ -7,6 +7,17 @@ import (
 	"net/http"
 )
 
+// @Summary      Register User
+// @Description  Registaration user
+// @Tags 		 User
+// @Accept       json
+// @Produce      json
+// @Param		 input body data.UserRegisterInput true "Input for remove user"
+// @Success      201 {object}  data.User
+// @Failure      400  {object}  Error
+// @Failure      422  {object}  Error
+// @Failure      500  {object}  Error
+// @Router       /users [post]
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input data.UserRegisterInput
 	err := app.readJSON(w, r, &input)
