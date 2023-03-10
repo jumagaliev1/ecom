@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_name text NOT NULL,
     last_name text NOT NULL,
     email citext UNIQUE NOT NULL,
-    phone text NOT NULL,
+    phone text,
     address text,
     password_hash bytea NOT NULL,
     role integer DEFAULT 1,

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS commnets (
+CREATE TABLE IF NOT EXISTS comments (
     id bigserial PRIMARY KEY,
     user_id bigint NOT NULL REFERENCES users ON DELETE CASCADE,
     product_id bigint NOT NULL REFERENCES products ON DELETE CASCADE,
