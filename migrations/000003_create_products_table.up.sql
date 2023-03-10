@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS products (
     rating float NOT NULL DEFAULT 0,
     stock int NOT NULL DEFAULT 1,
     images text[],
+    all_rating int DEFAULT 0,
+    count_rating int DEFAULT 0,
     created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     updated_at timestamp(0) with time zone NOT NULL DEFAULT NOW(),
     deleted_at timestamp(0)

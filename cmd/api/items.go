@@ -89,13 +89,8 @@ func (app *application) showProductHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	comments, err := app.models.Comments.GetByProduct(product)
-	if err != nil {
-		switch {
-		case errors.Is(err, data.ErrRecordNotFound):
-			app.notFoundResponse(w, r)
-		default:
-			app.serverErrorResponse(w, r, err)
-		}
+	if err != nil && !errors.Is(err, data.ErrRecordNotFound) {
+		app.serverErrorResponse(w, r, err)
 		return
 	}
 	err = app.writeJSON(w, http.StatusOK, envelope{"product": product, "comments": comments}, nil)
