@@ -21,6 +21,12 @@ func (app *application) routes() http.Handler {
 
 	router.Handler(http.MethodPost, "/v1/comment", app.authenticate(app.requireAuthenticatedUser(http.HandlerFunc(app.createCommentHandler))))
 
+	router.Handler(http.MethodPost, "/v1/cart", app.authenticate(app.requireAuthenticatedUser(http.HandlerFunc(app.CreateCart))))
+
+	router.Handler(http.MethodPost, "/v1/order", app.authenticate(app.requireAuthenticatedUser(http.HandlerFunc(app.CreateOrder))))
+	router.Handler(http.MethodDelete, "/v1/order/:id", app.authenticate(app.requireAuthenticatedUser(http.HandlerFunc(app.CancelOrder))))
+	router.Handler(http.MethodPatch, "/v1/order/:id", app.authenticate(app.requireAuthenticatedUser(http.HandlerFunc(app.ApproveOrder))))
+
 	router.HandlerFunc(http.MethodPost, "/v1/users", app.registerUserHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/tokens/authentication", app.createAuthenticationTokenHandler)
 

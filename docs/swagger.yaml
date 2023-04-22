@@ -1,5 +1,16 @@
 basePath: /v1
 definitions:
+  data.Cart:
+    properties:
+      id:
+        type: integer
+      product:
+        $ref: '#/definitions/data.Product'
+      quantity:
+        type: integer
+      user:
+        $ref: '#/definitions/data.User'
+    type: object
   data.Comment:
     properties:
       createdAt:
@@ -65,6 +76,32 @@ definitions:
       title:
         type: string
     type: object
+  data.Order:
+    properties:
+      cart_id:
+        $ref: '#/definitions/data.Cart'
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      id:
+        type: integer
+      order_status:
+        type: string
+      quantity:
+        type: integer
+      total_price:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  data.OrderReq:
+    properties:
+      cart_id:
+        type: integer
+      quantity:
+        type: integer
+    type: object
   data.Product:
     properties:
       category:
@@ -125,6 +162,13 @@ definitions:
       role:
         type: string
     type: object
+  main.CartReq:
+    properties:
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+    type: object
   main.Env:
     properties:
       status:
@@ -151,6 +195,42 @@ info:
   title: Ecom(Kaspi) API
   version: "1.0"
 paths:
+  /cart:
+    post:
+      consumes:
+      - application/json
+      description: Creat Cart for Shop
+      parameters:
+      - description: input
+        in: body
+        name: inout
+        required: true
+        schema:
+          $ref: '#/definitions/main.CartReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Cart'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Cart
+      tags:
+      - Cart
   /comment:
     post:
       consumes:
@@ -204,6 +284,107 @@ paths:
           schema:
             $ref: '#/definitions/main.Error'
       summary: Healthcheck
+  /order:
+    post:
+      consumes:
+      - application/json
+      description: Creat Order for Shop
+      parameters:
+      - description: input
+        in: body
+        name: inout
+        required: true
+        schema:
+          $ref: '#/definitions/data.OrderReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.Order'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Order
+      tags:
+      - Order
+  /order/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Cancel Order for Shop
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Cancel Order
+      tags:
+      - Order
+    patch:
+      consumes:
+      - application/json
+      description: Approve Order for Shop
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/main.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/main.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/main.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Approve Order
+      tags:
+      - Order
   /products:
     get:
       consumes:

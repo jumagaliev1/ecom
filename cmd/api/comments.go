@@ -8,18 +8,18 @@ import (
 	"net/http"
 )
 
-// @Summary      Add Comment
-// @Description  Give review with rating of product
-// @Security	ApiKeyAuth
-// @Tags         Comment
-// @Accept       json
-// @Produce      json
-// @Param        input body  data.InputComment  true  "input"
-// @Success      200  {object}  data.Comment
-// @Failure      422  {object}  Error
-// @Failure      404  {object}  Error
-// @Failure      500  {object}  Error
-// @Router       /comment [post]
+//	@Summary		Add Comment
+//	@Description	Give review with rating of product
+//	@Security		ApiKeyAuth
+//	@Tags			Comment
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		data.InputComment	true	"input"
+//	@Success		200		{object}	data.Comment
+//	@Failure		422		{object}	Error
+//	@Failure		404		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/comment [post]
 func (app *application) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 	input := &data.InputComment{}
 

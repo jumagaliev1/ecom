@@ -8,18 +8,18 @@ import (
 	"net/http"
 )
 
-// @Summary      Create Product
-// @Description  Creat Product for Shop
-// @Security	ApiKeyAuth
-// @Tags         Product
-// @Accept       json
-// @Produce      json
-// @Param        inout body  data.InputCreateProduct  true  "input"
-// @Success      200  {object}  data.Product
-// @Failure      422  {object}  Error
-// @Failure      404  {object}  Error
-// @Failure      500  {object}  Error
-// @Router       /products [post]
+//	@Summary		Create Product
+//	@Description	Creat Product for Shop
+//	@Security		ApiKeyAuth
+//	@Tags			Product
+//	@Accept			json
+//	@Produce		json
+//	@Param			inout	body		data.InputCreateProduct	true	"input"
+//	@Success		200		{object}	data.Product
+//	@Failure		422		{object}	Error
+//	@Failure		404		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/products [post]
 func (app *application) createProductHandler(w http.ResponseWriter, r *http.Request) {
 	input := &data.InputCreateProduct{}
 
@@ -29,6 +29,12 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	user := app.contextGetUser(r)
+
+	if user.Role == data.Roles_name[2] {
+		app.permissionRequiredResponse(w, r)
+		return
+	}
+
 	product := &data.Product{
 		User:        user.ID,
 		Title:       input.Title,
@@ -61,17 +67,17 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// @Summary      Show Product
-// @Description  Show Product for Shop
-// @Security	ApiKeyAuth
-// @Tags         Product
-// @Accept       json
-// @Produce      json
-// @Param        id path int true  "Product ID"
-// @Success      200  {object}  data.Product
-// @Failure      404  {object}  Error
-// @Failure      500  {object}  Error
-// @Router       /products/{id} [get]
+//	@Summary		Show Product
+//	@Description	Show Product for Shop
+//	@Security		ApiKeyAuth
+//	@Tags			Product
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Product ID"
+//	@Success		200	{object}	data.Product
+//	@Failure		404	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/products/{id} [get]
 func (app *application) showProductHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -99,18 +105,18 @@ func (app *application) showProductHandler(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// @Summary      Update Product
-// @Description  Update Product for Shop
-// @Security	ApiKeyAuth
-// @Tags         Product
-// @Accept       json
-// @Produce      json
-// @Param        input body data.InputUpdateProduct true  "Input"
-// @Success      200  {object}  data.Product
-// @Failure      422  {object}  Error
-// @Failure      404  {object}  Error
-// @Failure      500  {object}  Error
-// @Router       /products/{id} [patch]
+//	@Summary		Update Product
+//	@Description	Update Product for Shop
+//	@Security		ApiKeyAuth
+//	@Tags			Product
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		data.InputUpdateProduct	true	"Input"
+//	@Success		200		{object}	data.Product
+//	@Failure		422		{object}	Error
+//	@Failure		404		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/products/{id} [patch]
 func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -130,6 +136,10 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 
 	input := &data.InputUpdateProduct{}
 	user := app.contextGetUser(r)
+	if product.User != user.ID && user.Role != data.Roles_name[0] {
+		app.permissionRequiredResponse(w, r)
+		return
+	}
 	err = app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
@@ -184,17 +194,17 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// @Summary      Delete Product
-// @Description  Delete Product for Shop
-// @Security	ApiKeyAuth
-// @Tags         Product
-// @Accept       json
-// @Produce      json
-// @Param        id path int true  "Product ID"
-// @Success      200  {object}  string
-// @Failure      404  {object}  Error
-// @Failure      500  {object}  Error
-// @Router       /products/{id} [delete]
+//	@Summary		Delete Product
+//	@Description	Delete Product for Shop
+//	@Security		ApiKeyAuth
+//	@Tags			Product
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"Product ID"
+//	@Success		200	{object}	string
+//	@Failure		404	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/products/{id} [delete]
 func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.readIDParam(r)
 	if err != nil {
@@ -219,22 +229,22 @@ func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// @Summary      List of Products
-// @Description  All list of Products on Shop
-// @Security	ApiKeyAuth
-// @Tags         Product
-// @Accept       json
-// @Produce      json
-// @Param        title query string false  "title"
-// @Param        category query int false  "category"
-// @Param        page query int false  "page"
-// @Param        page_size query int false  "Page size"
-// @Param        sort query string false  "sort"
-// @Success      200  {object}  []data.Product
-// @Failure      422  {object}  Error
-// @Failure      404  {object}  Error
-// @Failure      500  {object}  Error
-// @Router       /products [get]
+//	@Summary		List of Products
+//	@Description	All list of Products on Shop
+//	@Security		ApiKeyAuth
+//	@Tags			Product
+//	@Accept			json
+//	@Produce		json
+//	@Param			title		query		string	false	"title"
+//	@Param			category	query		int		false	"category"
+//	@Param			page		query		int		false	"page"
+//	@Param			page_size	query		int		false	"Page size"
+//	@Param			sort		query		string	false	"sort"
+//	@Success		200			{object}	[]data.Product
+//	@Failure		422			{object}	Error
+//	@Failure		404			{object}	Error
+//	@Failure		500			{object}	Error
+//	@Router			/products [get]
 func (app *application) listProductsHandler(w http.ResponseWriter, r *http.Request) {
 	input := &data.InputListProducts{}
 

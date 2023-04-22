@@ -75,3 +75,14 @@ func (app *application) requireAuthenticatedUser(next http.Handler) http.Handler
 		next.ServeHTTP(w, r)
 	})
 }
+
+func (app *application) checkPermission(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+		if user.Role == data.Roles_name[2] {
+			app.permissionRequiredResponse(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}

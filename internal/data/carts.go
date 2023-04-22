@@ -15,6 +15,11 @@ type Cart struct {
 	Quantity int     `json:"quantity"`
 }
 
+type CartReq struct {
+	ProductID int `json:"product_id"`
+	Quantity  int `json:"quantity"`
+}
+
 func ValidateCart(v *validator.Validator, c *Cart) {
 	//TO-DO
 	//v.Check(reflect.DeepEqual(c.User, User{}), "user", "must be provided")
@@ -31,11 +36,41 @@ func (m CartModel) Insert(cart *Cart) error {
 				VALUES ($1, $2, $3)
 				RETURNING id`
 
-	args := []interface{}{cart.User.ID, cart.Product.ID}
+	args := []interface{}{cart.User.ID, cart.Product.ID, cart.Quantity}
 
 	return m.DB.QueryRow(query, args...).Scan(&cart.ID)
 }
 
+func (m CartModel) GetByID(ID int) (*Cart, error) {
+	query := `SELECT carts.id, carts.user_id, 
+       carts.product_id, products.price,
+       carts.quantity
+				FROM carts JOIN products ON products.id = carts.product_id
+				WHERE carts.id = $1`
+
+	var cart Cart
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, ID).Scan(
+		&cart.ID,
+		&cart.User.ID,
+		&cart.Product.ID,
+		&cart.Product.Price,
+		&cart.Quantity)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &cart, nil
+}
 func (m CartModel) GetByUser(user *User) (*Cart, error) {
 	query := `SELECT id, user_id, product_id, quantity 
 				FROM carts

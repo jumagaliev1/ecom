@@ -8,18 +8,18 @@ import (
 	"time"
 )
 
-// @Summary      Authentication User
-// @Description  Authentication user
-// @Tags 		 User
-// @Accept       json
-// @Produce      json
-// @Param		 input body data.InputAuthUser true "Input for Auth user"
-// @Success      201 {object}  data.Token
-// @Failure      400  {object}  Error
-// @Failure      401  {object}  Error
-// @Failure      422  {object}  Error
-// @Failure      500  {object}  Error
-// @Router       /tokens/authentication [post]
+//	@Summary		Authentication User
+//	@Description	Authentication user
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			input	body		data.InputAuthUser	true	"Input for Auth user"
+//	@Success		201		{object}	data.Token
+//	@Failure		400		{object}	Error
+//	@Failure		401		{object}	Error
+//	@Failure		422		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/tokens/authentication [post]
 func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Email    string `json:"email"`

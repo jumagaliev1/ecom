@@ -14,13 +14,13 @@ type SystemInfo struct {
 	Version     string `json:"version"`
 }
 
-// @Summary      Healthcheck
-// @Description  HealthCheck of server
-// @Accept       json
-// @Produce      json
-// @Success      200  {object} Env
-// @Failure      500  {object}  Error
-// @Router       /healthcheck [get]
+//	@Summary		Healthcheck
+//	@Description	HealthCheck of server
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	Env
+//	@Failure		500	{object}	Error
+//	@Router			/healthcheck [get]
 func (app *application) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	env := envelope{
 		"status": "available",

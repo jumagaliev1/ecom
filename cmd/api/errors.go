@@ -66,3 +66,8 @@ func (app *application) authenticationRequiredResponse(w http.ResponseWriter, r 
 	message := "you must be authenticated to access this resource"
 	app.errorResponse(w, r, http.StatusUnauthorized, message)
 }
+
+func (app *application) permissionRequiredResponse(w http.ResponseWriter, r *http.Request) {
+	message := "you must be owner this product to change"
+	app.errorResponse(w, r, http.StatusForbidden, message)
+}
